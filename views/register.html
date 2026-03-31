@@ -1,10 +1,77 @@
-<div>
-    <h1>Register</h1>
-    <form action="/register" method="post">
-        <input type="text" name="_csrf" value="{{ ._csrf }}" hidden>
-        <input type="text" name="username" placeholder="Username">
-        <input type="email" name="email" placeholder="Email">
-        <input type="password" name="password" placeholder="Password">
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
+<div class="container d-flex justify-content-center align-items-center">
+    <div class="register-card p-4 p-md-5 rounded-5 border shadow-sm">
+        <div class="text-center mb-4">
+            <h1 class="h3 fw-bold">Create Account</h1>
+            <p class="text-secondary small">Start your journey with ChatApp today</p>
+        </div>
+
+        <form action="/register" method="post">
+            <input type="hidden" name="_csrf" value="{{ ._csrf }}">
+            
+            <div class="mb-3">
+                <label for="username" class="form-label small fw-medium">Username</label>
+                <input type="text" name="username" id="username" 
+                    class="form-control form-control-lg rounded-3 fs-6" placeholder="johndoe" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label small fw-medium">Email address</label>
+                <input type="email" name="email" id="email" 
+                    class="form-control form-control-lg rounded-3 fs-6" placeholder="name@example.com" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label small fw-medium">Password</label>
+                <input type="password" name="password" id="password" 
+                    class="form-control form-control-lg rounded-3 fs-6" placeholder="••••••••" required>
+                <div class="form-text small mt-2">Must be at least 8 characters long.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 mb-4 fw-bold">
+                Sign Up
+            </button>
+
+            <div class="text-center">
+                <p class="small text-secondary mb-0">
+                    Already have an account? 
+                    <a href="/login" class="text-primary fw-medium text-decoration-none">Sign In Instead</a>
+                </p>
+            </div>
+        </form>
+    </div>
 </div>
+
+<style>
+    :root {
+        --bs-primary: #6366f1;
+        --bs-primary-rgb: 99, 102, 241;
+    }
+
+    .register-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        width: 100%;
+        max-width: 440px;
+    }
+
+    .form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    .btn-primary {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-primary:hover {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.25);
+    }
+
+    .fw-medium { font-weight: 500; }
+</style>

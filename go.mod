@@ -2,6 +2,8 @@ module putra4648/my-chat-app
 
 go 1.25.7
 
+require github.com/jackc/pgx-gofrs-uuid v0.0.0-20230224015001-1d428863c2e2
+
 require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
@@ -21,6 +23,7 @@ require (
 	github.com/gofiber/template/html/v3 v3.0.2 // indirect
 	github.com/gofiber/template/v2 v2.1.0 // indirect
 	github.com/gofiber/utils/v2 v2.0.2 // indirect
+	github.com/gofrs/uuid/v5 v5.0.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect

@@ -1,4 +1,51 @@
-<div>
-    <h1>Error</h1>
-    <p>{{ .error }}</p>
+<div class="container d-flex justify-content-center align-items-center">
+    <div class="error-card p-4 p-md-5 rounded-5 border shadow-sm">
+        <div class="text-center mb-4">
+            <h1 class="h3 fw-bold">Error</h1>
+            <p class="text-secondary small">{{ .error }}</p>
+        </div>
+
+        <div class="text-center">
+            <a href="/login" class="btn btn-primary w-100 py-3 rounded-3 mb-4 fw-bold">
+                Back to Login
+            </a>
+        </div>
+    </div>
 </div>
+
+<style>
+    :root {
+        --bs-primary: #6366f1;
+        --bs-primary-rgb: 99, 102, 241;
+    }
+
+    .error-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        width: 100%;
+        max-width: 440px;
+    }
+
+    .form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    .btn-primary {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-primary:hover {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.25);
+    }
+
+    .fw-medium {
+        font-weight: 500;
+    }
+</style>

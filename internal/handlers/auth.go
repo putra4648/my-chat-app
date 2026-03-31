@@ -24,6 +24,7 @@ func (h *authHandler) Register(app *fiber.App) {
 		token := csrf.TokenFromContext(c)
 		return c.Render("login", fiber.Map{
 			"_csrf": token,
+			"BodyClass": "auth-page",
 		})
 	})
 
@@ -35,21 +36,22 @@ func (h *authHandler) Register(app *fiber.App) {
 
 		user, err := h.service.GetUserByEmail(c.Context(), email)
 		if err != nil {
-			return c.Status(401).SendString("Invalid credentials")
+			return fiber.NewError(fiber.StatusUnauthorized, "Invalid credentials")
 		}
 
 		err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 		if err != nil {
-			return c.Status(401).SendString("Invalid credentials")
+			return fiber.NewError(fiber.StatusUnauthorized, "Invalid credentials")
 		}
 
-		if sess.Regenerate() != nil {
-			return c.Status(500).SendString("Session error")
+		if err = sess.Regenerate(); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "Session error")
 		}
 
-		sess.Set("user_id", user.ID)
+		sess.Set("user_id", user.ID.String())
 		sess.Set("user_email", user.Email)
 		sess.Set("user_username", user.Username)
+		sess.Set("authenticated", true)
 
 		return c.Redirect().To("/dashboard")
 	})
@@ -58,6 +60,7 @@ func (h *authHandler) Register(app *fiber.App) {
 		token := csrf.TokenFromContext(c)
 		return c.Render("register", fiber.Map{
 			"_csrf": token,
+			"BodyClass": "auth-page",
 		})
 	})
 

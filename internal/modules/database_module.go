@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/matzefriedrich/parsley/pkg/types"
 )
@@ -19,6 +21,12 @@ func db() *pgxpool.Pool {
 
 	config.MaxConns = 5
 	config.MinIdleConns = 2
+
+	log.Println("Registering gofrs/uuid support for all connections in the pool")
+	config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxuuid.Register(conn.TypeMap())
+		return nil
+	}
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
