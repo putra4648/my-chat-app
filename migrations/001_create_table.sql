@@ -6,7 +6,7 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     firstname VARCHAR(100),
-    lastname VARCHAR(100)
+    lastname VARCHAR(100),
     password_hash TEXT NOT NULL,
     avatar_url TEXT,
     last_seen TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

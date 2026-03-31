@@ -1,31 +1,25 @@
 package main
 
 import (
-	"log"
-	"os"
-	"putra4648/my-chat-app/internal/handlers"
+	"context"
+	"putra4648/my-chat-app/internal"
+	"putra4648/my-chat-app/internal/modules"
 
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/template/html/v3"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/matzefriedrich/parsley/pkg/bootstrap"
 )
 
 func main() {
-	engine := html.New("../views", ".html")
-	engine.Reload(true)
-	engine.Debug(true)
 
-	app := fiber.New(fiber.Config{
-		Views: engine,
-	})
+	ctx := context.Background()
+	bootstrap.RunParsleyApplication(ctx, internal.NewApp,
+		modules.ConfigureLogger,
+		modules.ConfigureDatabase,
+		modules.ConfigureStorage,
+		modules.ConfigureRepositories,
+		modules.ConfigureServices,
+		modules.ConfigureFiber,
+	)
 
-	app.Get("/", func(c fiber.Ctx) error {
-		return c.Render("home1", fiber.Map{
-			"Title": "Home",
-		}, "layouts/main")
-	})
 
-	handlers.WSRoute(app)
-
-	log.Fatal(app.Listen(":" + os.Getenv("PORT")))
 }

@@ -1,0 +1,9 @@
+<div>
+    <h1>Login</h1>
+    <form action="/login" method="post">
+        <input type="text" name="_csrf" value="{{ ._csrf }}" hidden>
+        <input type="email" name="email" placeholder="Email">
+        <input type="password" name="password" placeholder="Password">
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+</div>
