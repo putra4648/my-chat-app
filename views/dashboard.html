@@ -1,6 +1,6 @@
 <div class="chat-wrapper d-flex flex-column flex-md-row">
     <!-- Sidebar -->
-    <aside class="chat-sidebar border-end d-flex flex-column bg-white">
+    <aside class="chat-sidebar border-end d-flex flex-column bg-white" id="sidebar">
         <!-- Sidebar Header -->
         <div class="p-4 border-bottom d-flex align-items-center justify-content-between">
             <h5 class="mb-0 fw-bold">ChatApp</h5>
@@ -37,7 +37,7 @@
                         onclick="loadConversation('{{.ID}}', '{{.OtherUserName}}', '{{.OtherUserEmail}}', '{{.OtherUserID}}')">
                         <div class="avatar bg-primary text-white rounded-circle flex-shrink-0"
                             style="width: 48px; height: 48px;">
-                            <img src="https://i.pravatar.cc/150?u={{.OtherUserEmail}}"
+                            <img crossorigin="anonymous" src="https://i.pravatar.cc/150?u={{.OtherUserEmail}}"
                                 class="rounded-circle w-100 h-100">
                         </div>
                         <div class="flex-grow-1 min-w-0 text-start">
@@ -65,7 +65,8 @@
                         onclick="startPrivateChat('{{.ID}}', '{{.Username}}', '{{.Email}}')">
                         <div class="avatar bg-secondary text-white rounded-circle flex-shrink-0"
                             style="width: 40px; height: 40px;">
-                            <img src="https://i.pravatar.cc/150?u={{.Email}}" class="rounded-circle w-100 h-100">
+                            <img crossorigin="anonymous" src="https://i.pravatar.cc/150?u={{.Email}}"
+                                class="rounded-circle w-100 h-100">
                         </div>
                         <div class="flex-grow-1 text-start">
                             <h6 class="mb-0 small fw-bold">{{.Username}}</h6>
@@ -95,8 +96,11 @@
         <div id="active-chat" class="d-none flex-column flex-grow-1">
             <div class="p-3 border-bottom bg-white d-flex align-items-center justify-content-between px-md-4">
                 <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-link link-dark p-0 d-md-none" onclick="showSidebar()">
+                        <i class="bi bi-arrow-left fs-4"></i>
+                    </button>
                     <div class="avatar" style="width: 40px; height: 40px;">
-                        <img id="chat-header-avatar" src="" class="rounded-circle w-100 h-100">
+                        <img crossorigin="anonymous" id="chat-header-avatar" src="" class="rounded-circle w-100 h-100">
                     </div>
                     <div>
                         <h6 id="chat-header-name" class="mb-0 fw-bold">Recipient Name</h6>
@@ -105,11 +109,12 @@
                 </div>
             </div>
 
-            <div class="flex-grow-1 overflow-auto p-4 d-flex flex-column gap-3" id="message-container">
+            <div class="flex-grow-1 overflow-auto p-4 d-flex flex-column gap-3" id="message-container"
+                style="height: 0;">
                 <!-- Messages will be injected here -->
             </div>
 
-            <div class="p-3 bg-white border-top">
+            <div class="p-3 bg-white border-top sticky-bottom">
                 <form id="chat-form" class="d-flex gap-2">
                     <input type="text" id="message-input" class="form-control rounded-pill px-4"
                         placeholder="Type a message..." autocomplete="off">
@@ -136,6 +141,7 @@
         width: 100%;
         max-width: 350px;
         flex-shrink: 0;
+        background-color: #fff;
     }
 
     .nav-tabs .nav-link {
@@ -170,10 +176,11 @@
     }
 
     .message-bubble {
-        max-width: 75%;
+        max-width: 85%;
         padding: 10px 16px;
         border-radius: 18px;
         font-size: 0.95rem;
+        word-wrap: break-word;
     }
 
     .message-sent {
@@ -185,19 +192,29 @@
 
     .message-received {
         align-self: flex-start;
-        background-color: #e9ecef;
+        background-color: #fff;
         color: #212529;
         border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 767.98px) {
         .chat-sidebar {
             max-width: 100%;
-            height: 40%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            z-index: 1000;
+        }
+
+        .chat-sidebar.d-none-mobile {
+            display: none !important;
         }
 
         .chat-main {
-            height: 60%;
+            width: 100%;
+            height: 100%;
         }
     }
 </style>
@@ -208,6 +225,17 @@
     let currentConversationID = null;
     let currentReceiverID = null;
     let socket = null;
+
+    function showSidebar() {
+        document.getElementById('sidebar').classList.remove('d-none-mobile');
+        document.getElementById('active-chat').classList.replace('d-flex', 'd-none');
+    }
+
+    function hideSidebarOnMobile() {
+        if (window.innerWidth < 768) {
+            document.getElementById('sidebar').classList.add('d-none-mobile');
+        }
+    }
 
     function connectWS() {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -246,6 +274,8 @@
         currentConversationID = id;
         currentReceiverID = receiverID;
 
+        hideSidebarOnMobile();
+
         document.getElementById('empty-chat').classList.add('d-none');
         const activeChat = document.getElementById('active-chat');
         activeChat.classList.remove('d-none');
@@ -277,7 +307,7 @@
         const div = document.createElement('div');
         const isSent = msg.sender_id === currentUserID;
 
-        div.className = `message-bubble ${isSent ? 'message-sent' : 'message-received shadow-sm'}`;
+        div.className = `message-bubble ${isSent ? 'message-sent' : 'message-received'}`;
         div.innerText = msg.content;
 
         container.appendChild(div);

@@ -3,36 +3,15 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"putra4648/my-chat-app/internal/models"
 	"putra4648/my-chat-app/internal/services"
 	"sync"
 
+	"github.com/gofiber/contrib/v3/websocket"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/adaptor"
 	"github.com/gofiber/fiber/v3/middleware/session"
 	uuid "github.com/gofrs/uuid/v5"
-	"github.com/gorilla/websocket"
 )
-
-var userConnections = make(map[string]*websocket.Conn) // Map of userID -> connection
-var connMutex = &sync.Mutex{}
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true // Improved security would check origin here
-	},
-}
-
-type wsHandler struct {
-	chatService *services.ChatService
-}
-
-func NewWSHandler(chatService *services.ChatService) RouteHandler {
-	return &wsHandler{chatService: chatService}
-}
 
 type WsMessage struct {
 	Type           string    `json:"type"` // "text", "join", etc.
@@ -42,6 +21,127 @@ type WsMessage struct {
 	SenderID       uuid.UUID `json:"sender_id"`
 }
 
+type Hub struct {
+	chatService *services.ChatService
+	clients     map[string]*Client // userID -> Client
+	broadcast   chan WsMessage
+	register    chan *Client
+	unregister  chan *Client
+	mutex       sync.Mutex
+}
+
+func NewHub(chatService *services.ChatService) *Hub {
+	return &Hub{
+		chatService: chatService,
+		clients:     make(map[string]*Client),
+		broadcast:   make(chan WsMessage),
+		register:    make(chan *Client),
+		unregister:  make(chan *Client),
+	}
+}
+
+func (h *Hub) Run() {
+	for {
+		select {
+		case client := <-h.register:
+			h.mutex.Lock()
+			h.clients[client.userID] = client
+			h.mutex.Unlock()
+		case client := <-h.unregister:
+			h.mutex.Lock()
+			if _, ok := h.clients[client.userID]; ok {
+				delete(h.clients, client.userID)
+				close(client.send)
+			}
+			h.mutex.Unlock()
+		case message := <-h.broadcast:
+			go func(msg WsMessage) {
+				dbMsg := &models.Message{
+					ConversationID: msg.ConversationID,
+					SenderID:       &msg.SenderID,
+					Content:        msg.Content,
+				}
+				_ = h.chatService.SaveMessage(context.Background(), dbMsg)
+			}(message)
+
+			h.mutex.Lock()
+			if receiver, ok := h.clients[message.ReceiverID.String()]; ok {
+				select {
+				case receiver.send <- message:
+				default:
+					h.unregisterClient(receiver)
+				}
+			}
+			if sender, ok := h.clients[message.SenderID.String()]; ok {
+				select {
+				case sender.send <- message:
+				default:
+					h.unregisterClient(sender)
+				}
+			}
+			h.mutex.Unlock()
+		}
+	}
+}
+
+func (h *Hub) unregisterClient(client *Client) {
+	delete(h.clients, client.userID)
+	close(client.send)
+}
+
+type Client struct {
+	hub    *Hub
+	userID string
+	conn   *websocket.Conn
+	send   chan WsMessage
+}
+
+func (c *Client) readPump() {
+	defer func() {
+		c.hub.unregister <- c
+		c.conn.Close()
+	}()
+	for {
+		_, message, err := c.conn.ReadMessage()
+		if err != nil {
+			break
+		}
+		var wsMsg WsMessage
+		if err := json.Unmarshal(message, &wsMsg); err != nil {
+			continue
+		}
+		// Use a goroutine to avoid blocking the read loop if the hub is busy
+		go func(msg WsMessage) {
+			c.hub.broadcast <- msg
+		}(wsMsg)
+	}
+}
+
+func (c *Client) writePump() {
+	defer func() {
+		c.conn.Close()
+	}()
+	for {
+		message, ok := <-c.send
+		if !ok {
+			return
+		}
+		if err := c.conn.WriteJSON(message); err != nil {
+			return
+		}
+	}
+}
+
+type wsHandler struct {
+	hub *Hub
+}
+
+func NewWSHandler(chatService *services.ChatService) RouteHandler {
+	hub := NewHub(chatService)
+	go hub.Run()
+	return &wsHandler{hub: hub}
+}
+
 func (h *wsHandler) Register(app *fiber.App) {
 	app.Get("/ws", func(c fiber.Ctx) error {
 		sess := session.FromContext(c)
@@ -49,65 +149,25 @@ func (h *wsHandler) Register(app *fiber.App) {
 		if userID == nil {
 			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
+		c.Locals("user_id", userID)
+		return c.Next()
+	}, websocket.New(func(c *websocket.Conn) {
+		userID := c.Locals("user_id")
+		if userID == nil {
+			_ = c.Close()
+			return
+		}
 		userIDStr := userID.(string)
 
-		handler := adaptor.HTTPHandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			conn, err := upgrader.Upgrade(w, r, nil)
-			if err != nil {
-				return
-			}
-			defer conn.Close()
+		client := &Client{
+			hub:    h.hub,
+			userID: userIDStr,
+			conn:   c,
+			send:   make(chan WsMessage, 256),
+		}
+		h.hub.register <- client
 
-			connMutex.Lock()
-			userConnections[userIDStr] = conn
-			connMutex.Unlock()
-
-			defer func() {
-				connMutex.Lock()
-				delete(userConnections, userIDStr)
-				connMutex.Unlock()
-			}()
-
-			for {
-				_, message, err := conn.ReadMessage()
-				if err != nil {
-					break
-				}
-
-				var wsMsg WsMessage
-				if err := json.Unmarshal(message, &wsMsg); err != nil {
-					continue
-				}
-
-				// Handle different message types
-				if wsMsg.Type == "text" {
-					// Save to DB
-					msg := &models.Message{
-						ConversationID: wsMsg.ConversationID,
-						SenderID:       &wsMsg.SenderID,
-						Content:        wsMsg.Content,
-					}
-					err := h.chatService.SaveMessage(context.Background(), msg)
-					if err != nil {
-						continue
-					}
-
-					// Forward to receiver if online
-					receiverIDStr := wsMsg.ReceiverID.String()
-					connMutex.Lock()
-					receiverConn, online := userConnections[receiverIDStr]
-					connMutex.Unlock()
-
-					if online {
-						receiverConn.WriteJSON(wsMsg)
-					}
-
-					// Echo back to sender for confirmation
-					conn.WriteJSON(wsMsg)
-				}
-			}
-		})
-
-		return handler(c)
-	})
+		go client.writePump()
+		client.readPump()
+	}))
 }

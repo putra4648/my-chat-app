@@ -22,6 +22,10 @@ func NewDashboardHandler(userService *services.UserService, chatService *service
 }
 
 func (h *dashboardHandler) Register(app *fiber.App) {
+	app.Get("/", func(c fiber.Ctx) error {
+		return c.Redirect().To("/dashboard")
+	})
+
 	app.Get("/dashboard", func(c fiber.Ctx) error {
 		sess := session.FromContext(c)
 		csrf := csrf.TokenFromContext(c)

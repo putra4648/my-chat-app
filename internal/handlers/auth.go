@@ -87,10 +87,9 @@ func (h *authHandler) Register(app *fiber.App) {
 		return c.Redirect().To("/login")
 	})
 
-	app.Post("/logout", func(c fiber.Ctx) error {
+	app.Get("/logout", func(c fiber.Ctx) error {
 		sess := session.FromContext(c)
 
-		// Complete session reset (clears all data + new session ID)
 		if err := sess.Reset(); err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "Session error")
 		}
