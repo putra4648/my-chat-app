@@ -37,8 +37,9 @@
                         onclick="loadConversation('{{.ID}}', '{{.OtherUserName}}', '{{.OtherUserEmail}}', '{{.OtherUserID}}')">
                         <div class="avatar bg-primary text-white rounded-circle flex-shrink-0"
                             style="width: 48px; height: 48px;">
-                            <img crossorigin="anonymous" src="https://i.pravatar.cc/150?u={{.OtherUserEmail}}"
+                            <img crossorigin="anonymous" src="https://www.gravatar.com/avatar/{{.OtherUserEmail}}?s=150"
                                 class="rounded-circle w-100 h-100">
+
                         </div>
                         <div class="flex-grow-1 min-w-0 text-start">
                             <div class="d-flex justify-content-between">
@@ -65,7 +66,7 @@
                         onclick="startPrivateChat('{{.ID}}', '{{.Username}}', '{{.Email}}')">
                         <div class="avatar bg-secondary text-white rounded-circle flex-shrink-0"
                             style="width: 40px; height: 40px;">
-                            <img crossorigin="anonymous" src="https://i.pravatar.cc/150?u={{.Email}}"
+                            <img crossorigin="anonymous" src="https://www.gravatar.com/avatar/{{.Email}}?s=150"
                                 class="rounded-circle w-100 h-100">
                         </div>
                         <div class="flex-grow-1 text-start">
@@ -282,7 +283,9 @@
         activeChat.classList.add('d-flex');
 
         document.getElementById('chat-header-name').innerText = name;
-        document.getElementById('chat-header-avatar').src = `https://i.pravatar.cc/150?u=${email}`;
+        const avatar = document.getElementById('chat-header-avatar');
+        avatar.src = `https://www.gravatar.com/avatar/${email}?s=150`;
+        avatar.crossOrigin = "anonymous";
 
         const container = document.getElementById('message-container');
         container.innerHTML = '<div class="text-center text-muted extra-small">Loading messages...</div>';

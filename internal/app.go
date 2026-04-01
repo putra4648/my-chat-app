@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"os"
+	"putra4648/my-chat-app/internal/configs"
 	"putra4648/my-chat-app/internal/handlers"
 	"putra4648/my-chat-app/internal/middleware"
 
@@ -23,12 +24,9 @@ var _ bootstrap.Application = &parsleyApplication{}
 // NewApp Creates the main application service instance. This constructor function gets invoked by Parsley; add parameters for all required services.
 func NewApp(app *fiber.App, routeHandlers []handlers.RouteHandler, pool *pgxpool.Pool, logger *zap.Logger, store *redis.Storage) bootstrap.Application {
 
-	// Middlewares
-	app.Use(middleware.LoggerMiddleware(logger))
-	app.Use(middleware.HelmetMiddleware())
-	app.Use(middleware.CORSMiddleware())
-	app.Use(middleware.SessionMiddleware(store))
-	app.Use(middleware.CSRFMiddleware())
+	// Middlewares Setup
+	configs.SetupMiddleware(app, logger, store)
+	
 	app.Use(middleware.DBMiddleware(pool))
 	app.Use(middleware.AuthMiddleware())
 
