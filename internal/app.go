@@ -22,8 +22,6 @@ var _ bootstrap.Application = &parsleyApplication{}
 
 // NewApp Creates the main application service instance. This constructor function gets invoked by Parsley; add parameters for all required services.
 func NewApp(app *fiber.App, routeHandlers []handlers.RouteHandler, pool *pgxpool.Pool, logger *zap.Logger, store *redis.Storage) bootstrap.Application {
-	// Start websocket message handler
-	go handlers.HandleWSMessages()
 
 	// Middlewares
 	app.Use(middleware.LoggerMiddleware(logger))

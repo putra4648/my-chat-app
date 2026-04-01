@@ -1,186 +1,124 @@
 <div class="chat-wrapper d-flex flex-column flex-md-row">
-    <!-- Sidebar: User & Conversations -->
+    <!-- Sidebar -->
     <aside class="chat-sidebar border-end d-flex flex-column bg-white">
         <!-- Sidebar Header -->
-        <div
-            class="p-4 border-bottom d-flex align-items-center justify-content-between bg-light bg-opacity-10 backdrop-blur"
-            style="position: relative; z-index: 100;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                    style="width: 42px; height: 42px;">
-                    U
-                </div>
-                <div>
-                    <h6 class="mb-0 fw-bold">My Profile</h6>
-                    <span class="text-success small d-flex align-items-center gap-1">
-                        <span class="online-indicator"></span> Online
-                    </span>
-                </div>
-            </div>
+        <div class="p-4 border-bottom d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fw-bold">ChatApp</h5>
             <div class="dropdown">
-                <button class="btn btn-link link-secondary p-0" data-bs-toggle="dropdown">
+                <button class="btn btn-link link-dark p-0" data-bs-toggle="dropdown">
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
-                    <li><a class="dropdown-item py-2" href="#"><i class="bi bi-person me-2"></i> Profile</a></li>
-                    <li><a class="dropdown-item py-2" href="#"><i class="bi bi-gear me-2"></i> Settings</a></li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item py-2 text-danger" href="/logout"><i
-                                class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="/logout">Logout</a></li>
                 </ul>
             </div>
         </div>
 
-        <!-- Search -->
-        <div class="p-3">
-            <div class="input-group bg-light rounded-pill px-3 py-1">
-                <span class="input-group-text bg-transparent border-0 pe-1">
-                    <i class="bi bi-search text-muted small"></i>
-                </span>
-                <input type="text" class="form-control bg-transparent border-0 small" placeholder="Search friends...">
-            </div>
-        </div>
+        <!-- Tabs -->
+        <ul class="nav nav-tabs nav-fill border-0 px-3 mt-2" id="sidebarTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active small fw-bold py-3" id="chats-tab" data-bs-toggle="tab"
+                    data-bs-target="#chats" type="button">CHATS</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link small fw-bold py-3" id="friends-tab" data-bs-toggle="tab"
+                    data-bs-target="#friends" type="button">FRIENDS</button>
+            </li>
+        </ul>
 
-        <!-- Conversations List -->
-        <div class="flex-grow-1 overflow-auto conversations-list">
-            <div class="conversation-item active p-3 d-flex align-items-center gap-3">
-                <div class="avatar bg-info text-white rounded-circle flex-shrink-0" style="width: 48px; height: 48px;">
-                    <img src="https://i.pravatar.cc/150?u=jane" class="rounded-circle w-100 h-100" alt="">
-                </div>
-                <div class="flex-grow-1 min-w-0">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="mb-0 text-truncate fw-semibold">Jane Cooper</h6>
-                        <span class="small text-muted">10:45 AM</span>
+        <div class="tab-content flex-grow-1 overflow-auto">
+            <!-- Chats Tab -->
+            <div class="tab-pane fade show active" id="chats" role="tabpanel">
+                <div class="list-group list-group-flush" id="conversation-list">
+                    {{if .Conversations}}
+                    {{range .Conversations}}
+                    <button
+                        class="list-group-item list-group-item-action p-3 border-0 d-flex align-items-center gap-3 conversation-item"
+                        onclick="loadConversation('{{.ID}}', '{{.OtherUserName}}', '{{.OtherUserEmail}}', '{{.OtherUserID}}')">
+                        <div class="avatar bg-primary text-white rounded-circle flex-shrink-0"
+                            style="width: 48px; height: 48px;">
+                            <img src="https://i.pravatar.cc/150?u={{.OtherUserEmail}}"
+                                class="rounded-circle w-100 h-100">
+                        </div>
+                        <div class="flex-grow-1 min-w-0 text-start">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-0 text-truncate fw-bold">{{.OtherUserName}}</h6>
+                                <span class="extra-small text-muted">{{.LastMessageTime.Format "15:04"}}</span>
+                            </div>
+                            <p class="mb-0 text-truncate small text-muted">{{.LastMessage}}</p>
+                        </div>
+                    </button>
+                    {{end}}
+                    {{else}}
+                    <div class="p-4 text-center text-muted small">No conversations yet. Start a new one from Friends!
                     </div>
-                    <p class="mb-0 text-truncate small text-muted">Hey, how's the project going?</p>
+                    {{end}}
                 </div>
-                <div class="badge bg-primary rounded-pill small">2</div>
             </div>
 
-            <div class="conversation-item p-3 d-flex align-items-center gap-3">
-                <div class="avatar bg-warning text-white rounded-circle flex-shrink-0"
-                    style="width: 48px; height: 48px;">
-                    <img src="https://i.pravatar.cc/150?u=mark" class="rounded-circle w-100 h-100" alt="">
-                </div>
-                <div class="flex-grow-1 min-w-0">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="mb-0 text-truncate fw-semibold">Mark Wilson</h6>
-                        <span class="small text-muted">Yesterday</span>
-                    </div>
-                    <p class="mb-0 text-truncate small text-muted">Check out those designs I sent you!</p>
-                </div>
-            </div>
-
-            <div class="conversation-item p-3 d-flex align-items-center gap-3">
-                <div class="avatar bg-purple text-white rounded-circle flex-shrink-0"
-                    style="width: 48px; height: 48px;">
-                    <img src="https://i.pravatar.cc/150?u=dev" class="rounded-circle w-100 h-100" alt="">
-                </div>
-                <div class="flex-grow-1 min-w-0">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="mb-0 text-truncate fw-semibold">Dev Team</h6>
-                        <span class="small text-muted">2 days ago</span>
-                    </div>
-                    <p class="mb-0 text-truncate small text-muted fw-medium text-dark">Sarah: The PR is ready for
-                        review.</p>
+            <!-- Friends Tab -->
+            <div class="tab-pane fade" id="friends" role="tabpanel">
+                <div class="list-group list-group-flush">
+                    {{range .Users}}
+                    <button
+                        class="list-group-item list-group-item-action p-3 border-0 d-flex align-items-center gap-3 friend-item"
+                        onclick="startPrivateChat('{{.ID}}', '{{.Username}}', '{{.Email}}')">
+                        <div class="avatar bg-secondary text-white rounded-circle flex-shrink-0"
+                            style="width: 40px; height: 40px;">
+                            <img src="https://i.pravatar.cc/150?u={{.Email}}" class="rounded-circle w-100 h-100">
+                        </div>
+                        <div class="flex-grow-1 text-start">
+                            <h6 class="mb-0 small fw-bold">{{.Username}}</h6>
+                            <span class="extra-small text-muted">Available</span>
+                        </div>
+                    </button>
+                    {{end}}
                 </div>
             </div>
         </div>
     </aside>
 
-    <!-- Main Chat Area -->
-    <main class="chat-main d-flex flex-column flex-grow-1 bg-white shadow-sm">
-        <!-- Chat Header -->
-        <div class="p-3 border-bottom d-flex align-items-center justify-content-between px-md-4">
-            <div class="d-flex align-items-center gap-3">
-                <div class="avatar position-relative" style="width: 44px; height: 44px;">
-                    <img src="https://i.pravatar.cc/150?u=jane" class="rounded-circle w-100 h-100" alt="">
-                    <span
-                        class="position-absolute bottom-0 end-0 bg-success border border-white border-2 rounded-circle"
-                        style="width: 12px; height: 12px;"></span>
-                </div>
-                <div>
-                    <h6 class="mb-0 fw-bold">Jane Cooper</h6>
-                    <span class="text-muted small">Online</span>
-                </div>
+    <!-- Main Chat -->
+    <main class="chat-main d-flex flex-column flex-grow-1 bg-light" id="chat-main-area">
+        <!-- Empty State -->
+        <div id="empty-chat"
+            class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center p-5">
+            <div class="mb-4 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+                style="width: 120px; height: 120px;">
+                <i class="bi bi-chat-dots-fill text-primary display-4"></i>
             </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-light text-secondary border rounded-circle"
-                    style="width: 40px; height: 40px; padding: 0;">
-                    <i class="bi bi-telephone"></i>
-                </button>
-                <button class="btn btn-outline-light text-secondary border rounded-circle"
-                    style="width: 40px; height: 40px; padding: 0;">
-                    <i class="bi bi-camera-video"></i>
-                </button>
-                <button class="btn btn-outline-light text-secondary border rounded-circle"
-                    style="width: 40px; height: 40px; padding: 0;">
-                    <i class="bi bi-info-circle"></i>
-                </button>
-            </div>
+            <h4>Welcome to ChatApp</h4>
+            <p class="text-muted">Select a conversation or a friend to start messaging.</p>
         </div>
 
-        <!-- Messages Area -->
-        <div class="flex-grow-1 overflow-auto p-4 bg-light bg-opacity-50" id="message-container">
-            <!-- Received Message -->
-            <div class="message-row mb-4 d-flex gap-3 align-items-end">
-                <div class="avatar flex-shrink-0 mb-1" style="width: 32px; height: 32px;">
-                    <img src="https://i.pravatar.cc/150?u=jane" class="rounded-circle w-100 h-100" alt="">
-                </div>
-                <div class="message-content max-w-75">
-                    <div class="message-bubble bg-white p-3 rounded-4 shadow-sm border-0 border-bottom border-light">
-                        Hello! How's the project coming along? We're close to the deadline.
+        <!-- Chat View (Hidden by default) -->
+        <div id="active-chat" class="d-none flex-column flex-grow-1">
+            <div class="p-3 border-bottom bg-white d-flex align-items-center justify-content-between px-md-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar" style="width: 40px; height: 40px;">
+                        <img id="chat-header-avatar" src="" class="rounded-circle w-100 h-100">
                     </div>
-                    <span class="text-muted extra-small ms-2 mt-1 d-inline-block">10:42 AM</span>
+                    <div>
+                        <h6 id="chat-header-name" class="mb-0 fw-bold">Recipient Name</h6>
+                        <span class="text-success extra-small">Online</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Sent Message -->
-            <div class="message-row mb-4 d-flex gap-3 align-items-end justify-content-end text-end">
-                <div class="message-content max-w-75">
-                    <div class="message-bubble bg-primary text-white p-3 rounded-4 shadow-sm">
-                        Going well! I'm just finishing up the last few screens and then I'll push it to the repo.
-                    </div>
-                    <span class="text-muted extra-small me-2 mt-1 d-inline-block">10:45 AM</span>
-                </div>
+            <div class="flex-grow-1 overflow-auto p-4 d-flex flex-column gap-3" id="message-container">
+                <!-- Messages will be injected here -->
             </div>
 
-            <!-- Received Message -->
-            <div class="message-row mb-4 d-flex gap-3 align-items-end">
-                <div class="avatar flex-shrink-0 mb-1" style="width: 32px; height: 32px;">
-                    <img src="https://i.pravatar.cc/150?u=jane" class="rounded-circle w-100 h-100" alt="">
-                </div>
-                <div class="message-content max-w-75">
-                    <div class="message-bubble bg-white p-3 rounded-4 shadow-sm border-0 border-bottom border-light">
-                        Perfect. Let me know when it's ready for review! 🚀
-                    </div>
-                    <span class="text-muted extra-small ms-2 mt-1 d-inline-block">10:46 AM</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Input Area -->
-        <div class="p-3 p-md-4 border-top bg-white">
-            <form id="chat-form" class="d-flex align-items-center gap-2 gap-md-3">
-                <button type="button" class="btn btn-link link-secondary p-0">
-                    <i class="bi bi-plus-circle fs-5"></i>
-                </button>
-                <div class="flex-grow-1 position-relative">
-                    <input type="text" class="form-control rounded-pill py-3 px-4 bg-light border-0"
-                        placeholder="Type your message here...">
-                    <button type="button"
-                        class="btn position-absolute top-50 end-0 translate-middle-y me-2 text-secondary">
-                        <i class="bi bi-emoji-smile fs-5"></i>
+            <div class="p-3 bg-white border-top">
+                <form id="chat-form" class="d-flex gap-2">
+                    <input type="text" id="message-input" class="form-control rounded-pill px-4"
+                        placeholder="Type a message..." autocomplete="off">
+                    <button type="submit" class="btn btn-primary rounded-circle shadow-sm"
+                        style="width: 48px; height: 48px;">
+                        <i class="bi bi-send-fill"></i>
                     </button>
-                </div>
-                <button type="submit"
-                    class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-                    style="width: 52px; height: 52px;">
-                    <i class="bi bi-send-fill fs-5"></i>
-                </button>
-            </form>
+                </form>
+            </div>
         </div>
     </main>
 </div>
@@ -191,73 +129,179 @@
         height: 100vh;
         width: 100vw;
         overflow: hidden;
+        font-family: 'Inter', sans-serif;
     }
 
     .chat-sidebar {
         width: 100%;
-        max-width: 400px;
+        max-width: 350px;
         flex-shrink: 0;
-        z-index: 10;
-        position: relative;
     }
 
-    .conversation-item {
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+        border-bottom: 2px solid transparent;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--bs-primary);
+        border-bottom-color: var(--bs-primary);
+        background: transparent;
+    }
+
+    .conversation-item,
+    .friend-item {
+        transition: all 0.2s;
         cursor: pointer;
-        transition: all 0.2s ease;
-        border-left: 3px solid transparent;
     }
 
-    .conversation-item:hover {
-        background-color: rgba(99, 102, 241, 0.05);
-    }
-
-    .conversation-item.active {
-        background-color: rgba(99, 102, 241, 0.08);
-        border-left-color: var(--bs-primary);
-    }
-
-    .message-bubble {
-        position: relative;
-        font-size: 0.95rem;
-        line-height: 1.5;
+    .conversation-item:hover,
+    .friend-item:hover {
+        background-color: #f8f9fa;
     }
 
     .extra-small {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
-    .online-indicator {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        background-color: #22c55e;
-        border-radius: 50%;
+    #message-container {
+        scroll-behavior: smooth;
     }
 
-    .backdrop-blur {
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+    .message-bubble {
+        max-width: 75%;
+        padding: 10px 16px;
+        border-radius: 18px;
+        font-size: 0.95rem;
     }
 
-    .conversations-list::-webkit-scrollbar,
-    #message-container::-webkit-scrollbar {
-        width: 6px;
+    .message-sent {
+        align-self: flex-end;
+        background-color: var(--bs-primary);
+        color: white;
+        border-bottom-right-radius: 4px;
     }
 
-    .conversations-list::-webkit-scrollbar-thumb,
-    #message-container::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
+    .message-received {
+        align-self: flex-start;
+        background-color: #e9ecef;
+        color: #212529;
+        border-bottom-left-radius: 4px;
     }
 
-    @media (max-width: 767.98px) {
+    @media (max-width: 768px) {
         .chat-sidebar {
-            height: 35vh;
             max-width: 100%;
+            height: 40%;
         }
 
         .chat-main {
-            height: 65vh;
+            height: 60%;
         }
     }
 </style>
+
+<script>
+    const currentUserID = '{{.CurrentUserID}}';
+    const csrfToken = '{{._csrf}}';
+    let currentConversationID = null;
+    let currentReceiverID = null;
+    let socket = null;
+
+    function connectWS() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        socket = new WebSocket(`${protocol}//${window.location.host}/ws?user_id=${currentUserID}`);
+
+        socket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'text' && data.conversation_id === currentConversationID) {
+                appendMessage(data);
+            }
+        };
+
+        socket.onclose = function () {
+            setTimeout(connectWS, 1000); // Reconnect
+        };
+    }
+
+    async function startPrivateChat(userId, username, email) {
+        const response = await fetch(`/conversations/private/${userId}`, {
+            method: 'POST',
+            headers: {
+                'X-Csrf-Token': csrfToken
+            }
+        });
+        const data = await response.json();
+
+        // Switch to chats tab
+        const chatsTab = document.getElementById('chats-tab');
+        const tab = new bootstrap.Tab(chatsTab);
+        tab.show();
+
+        loadConversation(data.conversation_id, username, email, userId);
+    }
+
+    async function loadConversation(id, name, email, receiverID) {
+        currentConversationID = id;
+        currentReceiverID = receiverID;
+
+        document.getElementById('empty-chat').classList.add('d-none');
+        const activeChat = document.getElementById('active-chat');
+        activeChat.classList.remove('d-none');
+        activeChat.classList.add('d-flex');
+
+        document.getElementById('chat-header-name').innerText = name;
+        document.getElementById('chat-header-avatar').src = `https://i.pravatar.cc/150?u=${email}`;
+
+        const container = document.getElementById('message-container');
+        container.innerHTML = '<div class="text-center text-muted extra-small">Loading messages...</div>';
+
+        const response = await fetch(`/conversations/${id}/messages`);
+        const messages = await response.json();
+
+        container.innerHTML = '';
+        if (messages) {
+            messages.forEach(msg => {
+                appendMessage({
+                    content: msg.content,
+                    sender_id: msg.sender_id,
+                    type: 'text'
+                });
+            });
+        }
+    }
+
+    function appendMessage(msg) {
+        const container = document.getElementById('message-container');
+        const div = document.createElement('div');
+        const isSent = msg.sender_id === currentUserID;
+
+        div.className = `message-bubble ${isSent ? 'message-sent' : 'message-received shadow-sm'}`;
+        div.innerText = msg.content;
+
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    document.getElementById('chat-form').onsubmit = function (e) {
+        e.preventDefault();
+        const input = document.getElementById('message-input');
+        const content = input.value.trim();
+
+        if (content && currentConversationID && socket && currentReceiverID) {
+            const msg = {
+                type: 'text',
+                conversation_id: currentConversationID,
+                receiver_id: currentReceiverID,
+                sender_id: currentUserID,
+                content: content
+            };
+
+            socket.send(JSON.stringify(msg));
+            input.value = '';
+        }
+    };
+
+    connectWS();
+</script>

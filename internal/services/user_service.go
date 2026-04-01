@@ -18,6 +18,10 @@ func (s *UserService) GetUserByEmail(ctx context.Context, email string) (*models
 	return s.userRepo.GetUserByEmail(ctx, email)
 }
 
+func (s *UserService) GetUsersWithoutUserLogin(ctx context.Context, id string) ([]*models.User, error) {
+	return s.userRepo.GetUsersWithoutUserLogin(ctx, id)
+}
+
 func (s *UserService) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
 	return s.userRepo.CreateUser(ctx, user)
 }

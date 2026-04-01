@@ -9,5 +9,6 @@ import (
 
 func ConfigureServices(registry types.ServiceRegistry) error {
 	registration.RegisterTransient(registry, services.NewUserService)
+	registration.RegisterTransient(registry, services.NewChatService)
 	return nil
 }

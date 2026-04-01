@@ -28,7 +28,7 @@ func CSRFMiddleware() func(c fiber.Ctx) error {
 				})
 			case "html":
 				// Return a 403 Forbidden response for HTML requests
-				return c.Render("error", fiber.Map{
+				return c.Status(fiber.StatusForbidden).Render("error", fiber.Map{
 					"title":      "Error",
 					"error":      "403 Forbidden",
 					"error_code": "403",

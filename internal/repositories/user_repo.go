@@ -5,6 +5,7 @@ import (
 	"errors"
 	"putra4648/my-chat-app/internal/models"
 
+	"github.com/gofiber/fiber/v3/log"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -28,6 +29,36 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *UserRepository) GetUsersWithoutUserLogin(ctx context.Context, id string) ([]*models.User, error) {
+	var users []*models.User
+	rows, err := r.db.Query(ctx, "SELECT id, username, email FROM users WHERE id != $1", id)
+
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			log.Error(pgErr.Error())
+			return nil, pgErr
+		}
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(&user.ID, &user.Username, &user.Email)
+		if err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				return nil, pgErr
+			}
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+	return users, nil
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {

@@ -23,7 +23,7 @@ func (h *authHandler) Register(app *fiber.App) {
 	app.Get("/login", func(c fiber.Ctx) error {
 		token := csrf.TokenFromContext(c)
 		return c.Render("login", fiber.Map{
-			"_csrf": token,
+			"_csrf":     token,
 			"BodyClass": "auth-page",
 		})
 	})
@@ -59,13 +59,12 @@ func (h *authHandler) Register(app *fiber.App) {
 	app.Get("/register", func(c fiber.Ctx) error {
 		token := csrf.TokenFromContext(c)
 		return c.Render("register", fiber.Map{
-			"_csrf": token,
+			"_csrf":     token,
 			"BodyClass": "auth-page",
 		})
 	})
 
 	app.Post("/register", func(c fiber.Ctx) error {
-
 		username := c.FormValue("username")
 		email := c.FormValue("email")
 		password := c.FormValue("password")
@@ -93,9 +92,9 @@ func (h *authHandler) Register(app *fiber.App) {
 
 		// Complete session reset (clears all data + new session ID)
 		if err := sess.Reset(); err != nil {
-			return c.Status(500).SendString("Session error")
+			return fiber.NewError(fiber.StatusInternalServerError, "Session error")
 		}
 
-		return c.Redirect().To("/")
+		return c.Redirect().To("/login")
 	})
 }
